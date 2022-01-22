@@ -37,7 +37,6 @@ if __name__ == '__main__':
             sys.exit(1)
 
         input_files.append(args.input)
-        Globals.filename = os.path.basename(args.input[0:-3])
 
         if output_file is None:
             output_file = args.input[0:-3] + '.asm'
@@ -51,7 +50,7 @@ if __name__ == '__main__':
     asm = []
 
     if input_dir is None: # Processing a single file
-        asm = file_processor.translate_file(input_file[0], args.debug)
+        asm = file_processor.translate_file(input_files[0], args.debug)
     else: # Processing a directory
 
         pass
