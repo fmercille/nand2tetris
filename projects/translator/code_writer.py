@@ -40,7 +40,7 @@ class CodeWriter:
         'push': push_writer.Writer(),
         'label': label_writer.Writer(),
         'goto': goto_writer.Writer(),
-        'ifgoto': ifgoto_writer.Writer(),
+        'if-goto': ifgoto_writer.Writer(),
         'function': function_writer.Writer(),
         'call': call_writer.Writer(),
         'return': return_writer.Writer()
