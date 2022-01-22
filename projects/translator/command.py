@@ -33,7 +33,7 @@ class Command:
         return s
 
     def parse(line, lineno = 0):
-        tokens = line.split('//')[0].split(' ')
+        tokens = line.split('//')[0].strip().split(' ')
 
         if len(tokens[0]) == 0:
             return None
@@ -42,7 +42,7 @@ class Command:
             num_operands = len(tokens) - 1
 
             if num_operands != Command.valid_commands[tokens[0]]:
-                raise ParseError(f'Incorrect number of operands received for command {tokens[0]} (expected {valid_commands[token[0]]} but received {num_operands}')
+                raise ParseError(f'Incorrect number of operands received for command {tokens[0]} (expected {Command.valid_commands[tokens[0]]} but received {num_operands}')
 
             c = Command()
             c.command = tokens[0]
