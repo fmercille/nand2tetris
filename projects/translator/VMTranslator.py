@@ -55,6 +55,9 @@ if __name__ == '__main__':
 
         pass
 
+    if(args.debug):
+        for asm_line in asm:
+            print(asm_line)
 
     with open(output_file, 'w') as f:
         for asm_line in asm:
