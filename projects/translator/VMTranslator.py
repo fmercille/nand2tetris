@@ -9,7 +9,7 @@ import file_processor
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser(description='VM Translator for the HACK machine')
-    argparser.add_argument('input', help='Either a single .mm file, or a directory containing one or more .vm files'))
+    argparser.add_argument('input', help='Either a single .vm file, or a directory containing one or more .vm files')
     argparser.add_argument('-o', default=None, help='Output file name (default: [vm_file].asm)')
     argparser.add_argument('-v', action='store_const', const=True, default=False, dest='debug')
     args = argparser.parse_args()
