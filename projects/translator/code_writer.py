@@ -1,5 +1,6 @@
 import command
 from code_writer_impl import \
+    bootstrap_writer, \
     base_writer, \
     add_writer, \
     sub_writer, \
@@ -53,3 +54,6 @@ class CodeWriter:
             return CodeWriter.writers[cmd.command].write(cmd)
         except base_writer.NotImplementedError as e:
             raise NotImplementedError(e)
+
+    def bootstrap():
+        return bootstrap_writer.write()
