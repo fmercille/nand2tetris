@@ -9,7 +9,10 @@ def translate_file(filename, debug=False):
     commands = []
     asm = []
 
-    Globals.filename = os.path.basename(filename.split('.')[0])
+    Globals.filename = os.path.basename(filename).split('.')[0]
+
+    if debug:
+        print("********\nProcessing file:", Globals.filename, "\n********")
 
     # Read the input file and store the relevant lines as code
     with open(filename) as infile:
