@@ -29,7 +29,8 @@ if __name__ == '__main__':
         input_dir = args.input
 
         if output_file is None:
-            output_file = args.input + '.asm'
+            output_basefile = os.path.basename(args.input.rstrip('/'))
+            output_file = args.input.rstrip('/') + '/' + output_basefile + '.asm'
 
     elif os.path.isfile(args.input):
         if args.input[-3:] != '.vm':
@@ -46,14 +47,14 @@ if __name__ == '__main__':
         print("File not found:", args.input)
         sys.exit(1)
 
-
     asm = []
 
     if input_dir is None: # Processing a single file
         asm = file_processor.translate_file(input_files[0], args.debug)
     else: # Processing a directory
-
-        pass
+        asm += code_writer.CodeWriter.bootstrap()
+        for f in input_files:
+            asm += file_processor.translate_file(f, args.debug)
 
     if(args.debug):
         for asm_line in asm:
