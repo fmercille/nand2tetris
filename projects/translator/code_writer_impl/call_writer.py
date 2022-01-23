@@ -6,12 +6,12 @@ class Writer(BaseWriter):
 
     def _do_write(self, cmd):
         func_name = cmd.operands[0]
-        num_args = cmd.operands[1]
+        num_args = int(cmd.operands[1])
         return_label = f'__{Globals.filename}__ret__{Writer.ret_counter}__'
         Writer.ret_counter += 1
 
         push_ret_address = [
-            f'@({return_label}) // Push return address',
+            f'@{return_label} // Push return address',
             'D=A',
             *(self._push_to_stack())
         ]
@@ -45,7 +45,7 @@ class Writer(BaseWriter):
             *save_frame,
             *set_arg,
             *set_lcl,
-            f'({func_name}) // Jump to function'
+            f'@{func_name} // Jump to function',
             '0;JMP',
             f'({return_label})'
         ]

@@ -6,8 +6,10 @@ class Writer(BaseWriter):
             '@LCL // Fetch return address',
             'D=M',
             '@5',
-            'D=D-A',
-            'M=D',
+            'A=D-A',
+            'D=M',
+            '@5',
+            'M=D'
         ]
 
         push_return_value = [
