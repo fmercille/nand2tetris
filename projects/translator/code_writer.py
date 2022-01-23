@@ -27,6 +27,7 @@ class NotImplementedError(Exception):
 
 class CodeWriter:
     writers = {
+        'bootstrap': bootstrap_writer.Writer(),
         'add': add_writer.Writer(),
         'sub': sub_writer.Writer(),
         'neg': neg_writer.Writer(),
@@ -56,4 +57,7 @@ class CodeWriter:
             raise NotImplementedError(e)
 
     def bootstrap():
-        return bootstrap_writer.write()
+        cmd = command.Command()
+        cmd.command = 'bootstrap'
+        cmd.operands = []
+        return CodeWriter.write(cmd)
