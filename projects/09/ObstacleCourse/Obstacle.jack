@@ -1,0 +1,122 @@
+class Obstacle {
+  field Array wall;
+  field int y;
+
+  constructor Obstacle new(int wallIndex) {
+    let y = 30000;
+    let wall = Wall.getWall(wallIndex);
+    return this;
+  }
+
+  method int getY() { return y; }
+  method void reset() {
+    let y = 30000;
+    return;
+  }
+
+  method boolean collides(Runner runner) {
+    if (y < runner.getY()) { // We haven't reached the runner yet
+      return false;
+    }
+
+    if (y > (runner.getY() + runner.getHeight())) { // We are past the runner
+      return false;
+    }
+
+    return wall[runner.getX()]; // If there is a wall at the X position of the runner, there is a collision
+  }
+
+  method void activate() {
+    let y = 0;
+    return;
+  }
+
+  method void advance(int speed) {
+    if (y > 260) { // Don't advance obstacles that are obviously offscreen
+      return;
+    }
+
+    let y = y + speed;
+    do ddraw();
+//    do dclear();
+    return;
+  }
+
+  method void dclear() {
+    var int i;
+    var int memAddress;
+
+    if (y > 255) {
+      return;
+    }
+
+    let i = 0;
+    let memAddress = 16384 + ((y-1) * 32);
+
+    while (i < 32) {
+      if (wall[i]) {
+        do Memory.poke(memAddress + i, 0);
+      }
+
+      let i = i + 1;
+    }
+
+    return;
+  }
+
+  method void clear() {
+    if (y > 255) {
+      return;
+    }
+
+    do Screen.setColor(false);
+    do Screen.drawLine(0, y, 511, y);
+    return;
+  }
+
+  method void ddraw() {
+    var int i;
+    var int memAddress, prevMemAddress;
+
+    if (y > 255) {
+      return;
+    }
+
+    let i = 0;
+    let memAddress = 16384 + (y * 32);
+    let prevMemAddress = memAddress - 32;
+
+    while (i < 32) {
+      if (wall[i]) {
+        do Memory.poke(memAddress + i, -1);
+        do Memory.poke(prevMemAddress + i, 0);
+      }
+
+      let i = i + 1;
+    }
+
+    return;
+  }
+
+  method void draw() {
+    var int i;
+
+    if (y > 255) {
+      return;
+    }
+
+    let i = 0;
+    do Screen.setColor(true);
+
+    while (i < 32) {
+      if (wall[i]) {
+        do Screen.drawLine(i * 16, y, (i * 16) + 15, y);
+      }
+
+
+      let i = i + 1;
+    }
+
+    return;
+  }
+}

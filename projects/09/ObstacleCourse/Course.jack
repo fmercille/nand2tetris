@@ -1,0 +1,147 @@
+class Course {
+  field Array obstacles;
+  field int numObstacles;
+  field int firstObstacle;
+  field int nextObstacle;
+  field int lastObstacle;
+  field int score;
+  field int speed;
+  field int skip;
+
+  constructor Course new(String seed) {
+    var int i;
+    var int seedChar;
+    var int numWalls;
+    var Array wall;
+    var Obstacle obstacle;
+
+    let numObstacles = Math.min(32, seed.length()); // Set a limit to 32 characters for the seed, ignore the rest
+
+    let numWalls = Wall.getNumWalls(); // Cache the value to avoid calling the function multiple times
+    let obstacles = Array.new(numObstacles);
+    let i = 0;
+
+    while (i < numObstacles) {
+      let seedChar = seed.charAt(i);
+
+      while (seedChar > (numWalls-1)) {
+        let seedChar = seedChar - numWalls;
+      }
+
+      let obstacles[i] = Obstacle.new(seedChar);
+      let i = i + 1;
+    }
+
+    let lastObstacle = 0;
+    let nextObstacle = 1;
+    let skip = 0;
+    let speed = 1;
+    let score = 0;
+    let firstObstacle = 0;
+    let obstacle = obstacles[0];
+    do obstacle.activate();
+
+    return this;
+  }
+
+  method void addObstacle() {
+    var Obstacle next;
+    let next = obstacles[nextObstacle];
+    do next.activate();
+    let lastObstacle = nextObstacle;
+    let nextObstacle = nextObstacle + 1;
+
+    if (nextObstacle > (numObstacles - 1)) {
+      let nextObstacle = 0;
+    }
+
+    return;
+  }
+
+  method void advance() {
+    var Obstacle obstacle;
+    var int i;
+
+    let skip = skip + 1;
+
+    if (skip < (4 - speed)) {
+      return;
+    }
+
+    let skip = 0;
+    let i = firstObstacle;
+
+    // Advance all obstacles except the last
+    while (~(i = lastObstacle)) {
+      let obstacle = obstacles[i];
+      do obstacle.advance(1);
+      let i = i + 1;
+      if (i > (numObstacles - 1)) {
+        let i = 0;
+      }
+    }
+
+    // Then advance the last
+    let obstacle = obstacles[lastObstacle];
+    do obstacle.advance(1);
+
+    if (obstacle.getY() > 100) {
+      do addObstacle();
+      let score = score + 1;
+      let speed = (score / 10) + 1;
+    }
+
+    // If the first obstacle has cleared the player, we remove it and set the next one as the first
+    let obstacle = obstacles[firstObstacle];
+    if (obstacle.getY() > 250) {
+      do obstacle.reset();
+      let firstObstacle = firstObstacle + 1;
+      if (firstObstacle > (numObstacles - 1)) {
+        let firstObstacle = 0;
+      }
+    }
+
+    return;
+  }
+
+  method boolean collides(Runner runner) {
+    var Obstacle obstacle;
+    var int i;
+    var boolean collision;
+    let i = 0;
+    let collision = false;
+
+    while (i < numObstacles) {
+      let obstacle = obstacles[i];
+      if (obstacle.collides(runner)) {
+        let collision = true;
+      }
+      let i = i + 1;
+    }
+
+    return collision;
+  }
+
+  method void reset() {
+    var int i;
+    var Obstacle obstacle;
+    let i = 0;
+
+    while (i < numObstacles) {
+      let obstacle = obstacles[i];
+      do obstacle.reset();
+      let i = i + 1;
+    }
+
+    let lastObstacle = 0;
+    let nextObstacle = 1;
+    let obstacle = obstacles[0];
+    let speed = 1;
+    let score = 0;
+    let skip = 0;
+    do obstacle.activate();
+    return;
+  }
+
+  method int getScore() { return score; }
+}

@@ -1,0 +1,29 @@
+class Main {
+  function void main() {
+    var Game game;
+    var String seed;
+    let game = Game.getInstance();
+
+    do Screen.clearScreen();
+    do Output.moveCursor(5, 10);
+    do Output.printString("Welcome to the Obstacle Course game");
+    
+    do Output.moveCursor(6, 10);
+    do Output.printString("Dodge the obstacles that are coming at you by");
+    do Output.moveCursor(7, 10);
+    do Output.printString("repeatedly pressing the Left and Right arrow keys.");
+    do Output.moveCursor(8, 10);
+    do Output.printString("Obstacles will move faster as the game progresses.");
+    do Output.moveCursor(11, 10);
+    do Output.printString("To start, please type in some gibberish that will");
+    do Output.moveCursor(12, 10);
+    do Output.printString("serve as a random seed to populate the game:");
+    do Output.moveCursor(14, 10);
+    let seed = Keyboard.readLine("Type here:");
+    do Screen.clearScreen();
+
+    do game.run(seed);
+    do game.dispose();
+    return;
+  }
+}

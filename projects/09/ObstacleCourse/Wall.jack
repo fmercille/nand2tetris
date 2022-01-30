@@ -1,0 +1,78 @@
+class Wall {
+  static Array walls;
+  static int numWalls;
+
+  function int getNumWalls() { return numWalls; }
+
+  function void initialize() {
+    var Array wallStrings, wallString;
+    var int i, j;
+    var Array wall;
+
+    let numWalls = 26;
+    let wallStrings = Array.new(numWalls);
+
+    let wallStrings[ 0] = "-----   ----   ----   -------   ";
+    let wallStrings[ 1] = "  --  ----   ------  ------  ---";
+    let wallStrings[ 2] = "  -----  ---------  ---  ----   ";
+    let wallStrings[ 3] = "-----------        -------------";
+    let wallStrings[ 4] = "      --------------------      ";
+    let wallStrings[ 5] = "-------   ---------   -------   ";
+    let wallStrings[ 6] = "   -------   ---------   -------";
+    let wallStrings[ 7] = "- - - - - - - - - - - - - - - - ";
+    let wallStrings[ 8] = " - - - - - - - - - - - - - - - -";
+    let wallStrings[ 9] = "-------  ---   -------  -  -----";
+    let wallStrings[10] = "-----     --------      ---     ";
+    let wallStrings[11] = "   --------------------------   ";
+    let wallStrings[12] = "      ------   -----   ---   ---";
+    let wallStrings[13] = "  -----------   -------   ------";
+    let wallStrings[14] = "---------   -------    ------  -";
+    let wallStrings[15] = "   -------   -----  ---   ------";
+    let wallStrings[16] = "----- ------   ------  ------  -";
+    let wallStrings[17] = "-- --- --- --- --- --- --- --- -";
+    let wallStrings[18] = "----  ----       ------  -------";
+    let wallStrings[19] = "------  -------------    -------";
+    let wallStrings[20] = "----------     ------ ---   ----";
+    let wallStrings[21] = "--    ----    --  --------------";
+    let wallStrings[22] = "--------    ---------  ----- ---";
+    let wallStrings[23] = "  -------------  -------- ----  ";
+    let wallStrings[24] = "---------    ---------   ---- --";
+    let wallStrings[25] = "------- ----   -------  --------";
+
+    let i = 0;
+    let walls = Array.new(numWalls);
+
+    while (i < numWalls) {
+      let wall = Array.new(32);
+      let wallString = wallStrings[i] + 2;
+      let j = 0;
+
+      while (j < 32) {
+        if (wallString[j] = 45) {
+          let wall[j] = true;
+        } else {
+          let wall[j] = false;
+        }
+
+        let j = j + 1;
+      }
+
+      let walls[i] = wall;
+      let i = i + 1;
+    }
+
+    return;
+  }
+
+  function Array getWall(int index) {
+    var Array wall;
+
+    if (index < numWalls) {
+      let wall = walls[index];
+    } else {
+      let wall = walls[0];
+    }
+
+    return wall;
+  }
+}

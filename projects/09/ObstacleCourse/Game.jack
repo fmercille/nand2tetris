@@ -1,0 +1,135 @@
+class Game {
+  static Game instance;
+  field Runner runner;
+  field boolean exit;
+
+  constructor Game new() {
+    do Screen.clearScreen();
+    do Wall.initialize();
+    let runner = Runner.new(0, 512 - 16);
+    return this;
+  }
+
+  method void dispose() {
+    do runner.dispose();
+    do Memory.deAlloc(this);
+    return;
+  }
+
+  function Game getInstance() {
+    if (instance = 0) {
+      let instance = Game.new();
+    }
+    return instance;
+  }
+
+  method void run(String seed) {
+    var char key;
+    var boolean keyPressed, gameOver, playAgainInputValid;
+    var char playAgainInput;
+    var Course course;
+    var String courseSeed;
+    var int i;
+
+    let keyPressed = false;
+    let gameOver = false;
+    let playAgainInputValid = false;
+    let playAgainInput = 0;
+    let i = 0;
+
+    if (seed.length() < 4) { // Append some "random" chars to the seed to make it at least 4 long
+      let courseSeed = String.new(seed.length() + 4);
+
+      while (i < seed.length()) {
+        do courseSeed.appendChar(seed.charAt(i));
+        let i = i + 1;
+      }
+      
+      do courseSeed.appendChar(4);
+      do courseSeed.appendChar(18);
+      do courseSeed.appendChar(21);
+      do courseSeed.appendChar(3);
+    } else {
+      let courseSeed = seed;
+    }
+
+    let course = Course.new(courseSeed);
+    do runner.show();
+
+    while (~gameOver) {
+      // Move runner
+      let key = Keyboard.keyPressed();
+
+      if (keyPressed) {
+        if (key = 0) {
+          let keyPressed = false;
+        }
+      } else {
+        if (key = 130) {
+          do runner.hide();
+          do runner.move(1);
+          do runner.show();
+          let keyPressed = true;
+        }
+
+        if (key = 132) {
+          do runner.hide();
+          do runner.move(2);
+          do runner.show();
+          let keyPressed = true;
+        }
+      }
+
+      if (key = 140) { // Temporary exit strategy
+        let gameOver = true;
+      }
+
+      // Move obstacles
+      do course.advance();
+
+      // Check for collision
+      if (course.collides(runner)) {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(170, 90, 350, 180);
+        do Screen.setColor(true);
+        do Screen.drawLine(170, 90, 350, 90);
+        do Screen.drawLine(170, 90, 170, 180);
+        do Screen.drawLine(350, 90, 350, 180);
+        do Screen.drawLine(170, 180, 350, 180);
+        do Output.moveCursor(10, 25);
+        do Output.printString("Game Over");
+        do Output.moveCursor(11, 25);
+        do Output.printString("Your score:");
+        do Output.moveCursor(11, 37);
+        do Output.printInt(course.getScore());
+
+        do Output.moveCursor(13, 25);
+        do Output.printString("Play Again? (Y/N)");
+
+        let playAgainInputValid = false;
+
+        while (~playAgainInputValid) {
+          let playAgainInput = Keyboard.readChar();
+
+          if (playAgainInput = 89) { // Y
+            let gameOver = false;
+            let playAgainInputValid = true;
+
+            do Screen.clearScreen();
+            do course.reset();
+            do runner.show();
+          }
+
+          if (playAgainInput = 78) { // N
+            let gameOver = true;
+            let playAgainInputValid = true;
+          }
+        }
+      }
+
+      do Sys.wait(5);
+    }
+
+    return;
+  }
+}
