@@ -8,7 +8,7 @@ class Writer(BaseWriter):
             '@5',
             'A=D-A',
             'D=M',
-            '@5',
+            '@9',
             'M=D'
         ]
 
@@ -41,7 +41,7 @@ class Writer(BaseWriter):
             ]
 
         goto_return_address = [
-            '@5 // Goto return address that was saved in temp',
+            '@9 // Goto return address that was saved in temp',
             'A=M',
             '0;JMP'
         ]
