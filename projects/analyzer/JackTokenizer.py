@@ -1,6 +1,6 @@
 import os
 from enum import Enum
-from JackException import FileNotFoundException, TokenNotFoundException
+from JackException import JackException, FileNotFoundException, TokenNotFoundException
 import re
 
 class JackTokenType(Enum):
@@ -17,15 +17,15 @@ class JackToken:
 
 class JackTokenizer :
   def __init__(self, filename):
-    if not os.path.isfile(input):
+    if not os.path.isfile(filename):
       raise FileNotFoundException(filename)
 
-    self._code = []
+    self._code = ""
 
     with open(filename) as f:
       line = f.readline()
       while line:
-        comment_index = line.find('//')
+        comment_index = line.find('//') # Remove all the "till end of line" comments
 
         if comment_index >= 0:
           line = line[:comment_index]
@@ -33,9 +33,20 @@ class JackTokenizer :
         line = line.strip()
 
         if len(line) > 0:
-          self._code.append(line.strip())
+          self._code += line.strip() + " "
 
         line = f.readline()
+
+    # Remove all the multiline comments
+    start = self._code.find("/*")
+
+    while start >= 0:
+      end = self._code.find("*/", start+1)
+      if end < 0:
+        raise JackException("Reached end of file while attempting to close comment block")
+
+      self._code = self._code[:start] + " " + self._code[end+2:]
+      start = self._code.find("/*")
 
     self._build_regexps()
     self._tokenize()
@@ -80,38 +91,50 @@ class JackTokenizer :
   def _tokenize(self):
     self.tokens = []
 
-    for line in range(len(self._code)):
-      i = 0
-      while i < len(line):
-        match = self._regexps['keyword'].match(line)
+    i = 0
+    code = self._code.strip()
+
+    try:
+      while len(code) > 0:
+        match = self._regexps['keyword'].match(code)
+        match_length = 0
         if match is not None:
-          token = JackToken(JackTokenType.KEYWORD, match.groups[0].strip())
+          token = JackToken(JackTokenType.KEYWORD, match.groups()[0].strip())
           self.tokens.append(token)
         else:
-          match = self._regexps['symbol'].match(line)
+          match = self._regexps['symbol'].match(code)
           if match is not None:
-            token = JackToken(JackTokenType.SYMBOL, match.groups[0].strip())
+            token = JackToken(JackTokenType.SYMBOL, match.groups()[0].strip())
             self.tokens.append(token)
           else:
-            match = self._regexps['integer'].match(line)
+            match = self._regexps['integer'].match(code)
             if match is not None:
-              token = JackToken(JackTokenType.INTEGER_CONSTANT, match.groups[0].strip())
+              token = JackToken(JackTokenType.INTEGER_CONSTANT, match.groups()[0].strip())
               self.tokens.append(token)
             else:
-              match = self._regexps['string'].match(line)
+              match = self._regexps['string'].match(code)
               if match is not None:
-                token = JackToken(JackTokenType.STRING_CONSTANT, match.groups[0].strip())
+                token = JackToken(JackTokenType.STRING_CONSTANT, match.groups()[0].strip())
                 self.tokens.append(token)
-                i += 2 # To account for the two quotation marks
+                match_length += 2 # To account for the two quotation marks
               else:
-                match = self._regexps['identifier'].match(line)
+                match = self._regexps['identifier'].match(code)
                 if match is not None:
-                  token = JackToken(JackTokenType.IDENTIFIER, match.groups[0].strip())
+                  token = JackToken(JackTokenType.IDENTIFIER, match.groups()[0].strip())
                   self.tokens.append(token)
                 else:
-                  raise TokenNotFoundException(line)
+                  raise TokenNotFoundException(code)
 
-        i += len(match.groups[0])
-    
+        match_length += len(match.groups()[0])
+        code = code[match_length:].lstrip()
+    except JackException as e:
+      e.print()
+
     self._current_index = 0
     self._next_index = 1 if len(self.tokens) > 1 else None
+
+if __name__ == '__main__':
+  j = JackTokenizer('../10/Square/Main.jack')
+
+  for t in j.tokens:
+    print("type =", t.type, "  value =", t.value)
