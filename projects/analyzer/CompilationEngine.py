@@ -1,4 +1,3 @@
-from numpy import inner
 from JackException import JackException, ParseError, TokenNotFoundException
 from JackTokenizer import JackTokenizer, JackTokenType, JackToken
 
