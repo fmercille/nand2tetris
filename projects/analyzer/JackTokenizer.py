@@ -24,6 +24,21 @@ class JackToken:
     elif string in ['class','constructor','function','method','field','static','var','int','char','boolean','void','true','false','null','this','let','do','if','else','while','return']:
       return JackToken(JackTokenType.KEYWORD, string)
 
+  def xml(self):
+    value = self.value.replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
+    if self.type == JackTokenType.KEYWORD:
+      tags = ['<keyword>', '</keyword>']
+    elif self.type == JackTokenType.SYMBOL:
+      tags = ['<symbol>', '</symbol>']
+    elif self.type == JackTokenType.INTEGER_CONSTANT:
+      tags = ['<integerConstant>', '</integerConstant>']
+    elif self.type == JackTokenType.STRING_CONSTANT:
+      tags = ['<stringConstant>', '</stringConstant>']
+    elif self.type == JackTokenType.IDENTIFIER:
+      tags = ['<identifier>', '</identifier>']
+
+    return tags[0] + " " + value + " " + tags[1]
+
 class JackTokenizer :
   def __init__(self, filename):
     if not os.path.isfile(filename):
@@ -79,6 +94,13 @@ class JackTokenizer :
       return None
 
     return self.tokens[self._next_index]
+
+  def xml(self):
+    _ret = []
+    for token in self.tokens:
+      _ret.append(token.xml())
+
+    return _ret
 
   def _build_regexps(self):
     symbols = '[{}()\[\].,;+\-*/&|<>=~]'
