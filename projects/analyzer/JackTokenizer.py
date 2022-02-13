@@ -11,9 +11,18 @@ class JackTokenType(Enum):
   IDENTIFIER        = 1 << 4
 
 class JackToken:
-  def __init__(self, type, value):
+  def __init__(self, type: JackTokenType, value: str):
     self.type = type
     self.value = value
+  
+  def __str__(self):
+    return str(self.type) + ":" + self.value
+
+  def fromString(string):
+    if string in ['{','}','(',')','[',']','.',',',';','+','\\','-','*','/','&','|','<','>','=','~']:
+      return JackToken(JackTokenType.SYMBOL, string)
+    elif string in ['class','constructor','function','method','field','static','var','int','char','boolean','void','true','false','null','this','let','do','if','else','while','return']:
+      return JackToken(JackTokenType.KEYWORD, string)
 
 class JackTokenizer :
   def __init__(self, filename):
@@ -59,13 +68,13 @@ class JackTokenizer :
     self._current_index = self._current_index + 1
     self._next_index = self._current_index + 1
 
-  def currentToken(self):
+  def currentToken(self) -> JackToken:
     if self._current_index >= len(self.tokens):
       return None
     
     return self.tokens[self._current_index]
 
-  def nextToken(self):
+  def nextToken(self) -> JackToken:
     if self._next_index >= len(self.tokens):
       return None
 
