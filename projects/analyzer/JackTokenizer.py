@@ -108,7 +108,7 @@ class JackTokenizer :
     keyword_regex = re.compile(r"^(" + keywords + ")(\\s|" + symbols + ")")
     symbol_regex = re.compile(r"^(" + symbols + ")")
     integer_regex = re.compile(r"^([0-9]+)")
-    string_regex = re.compile(r'^"(([^"]|\")*)"')
+    string_regex = re.compile(r'^"(([^"]|\")*?)"')
     identifier_regex = re.compile(r"^([A-Za-z][A-Za-z0-9]*)")
 
     self._regexps = {
@@ -145,7 +145,7 @@ class JackTokenizer :
             else:
               match = self._regexps['string'].match(code)
               if match is not None:
-                token = JackToken(JackTokenType.STRING_CONSTANT, match.groups()[0].strip())
+                token = JackToken(JackTokenType.STRING_CONSTANT, match.groups()[0])
                 self.tokens.append(token)
                 match_length += 2 # To account for the two quotation marks
               else:
