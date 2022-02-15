@@ -3,7 +3,7 @@ import argparse
 
 from JackException import JackException, FileNotFoundException
 from JackTokenizer import JackTokenizer
-from CompilationEngine import CompilationEngine
+from JackParser import JackParser
 
 class JackAnalyzer:
   def __init__(self, file_or_dir):
@@ -20,7 +20,7 @@ class JackAnalyzer:
   def parse(self):
     for file in self._files:
       tokenizer = JackTokenizer(file)
-      compiler = CompilationEngine(tokenizer)
+      compiler = JackParser(tokenizer)
       output = compiler.compileClass()
 
       # Write the token file

@@ -1,7 +1,7 @@
 from JackException import JackException, ParseError, TokenNotFoundException
 from JackTokenizer import JackTokenizer, JackTokenType, JackToken
 
-class CompilationEngine:
+class JackParser:
   tokens = {
     'static': JackToken(JackTokenType.KEYWORD, 'static'),
     'field': JackToken(JackTokenType.KEYWORD, 'field'),
