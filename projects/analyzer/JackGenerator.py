@@ -7,7 +7,7 @@ operator_code = {
   '+': 'add',
   '-': 'sub',
   '*': 'call Math.multiply 2',
-  '/': 'call Math.divide',
+  '/': 'call Math.divide 2',
   '&': 'and',
   '|': 'or',
   '<': 'lt',
@@ -444,6 +444,16 @@ class JackGenerator:
       elif child.tag == 'integerConstant':
         code.append("push constant {}".format(child.text.strip()))
 
+      elif child.tag == 'stringConstant':
+        string = child.text[1:-1] # We must only remove the leading and trailing spaces
+        code.append('push constant {}'.format(len(string)))
+        code.append('call String.new 1')
+
+        for c in string:
+          code.append('push constant {}'.format(ord(c)))
+          code.append('call String.appendChar 2')
+        pass
+
       elif child.tag == 'keyword':
         if child.text.strip() in ['true', 'false', 'null']:
           code.append('push constant 0')
@@ -497,6 +507,13 @@ class JackGenerator:
         kind = 'this' if self.symbols.scope_of(identifier['name']) == 'class' else self.symbols.kind_of(identifier['name'])
         code += identifier['expression_code']
         code.append('call {}.{} {}'.format(object, identifier['name'], identifier['num_arguments']))
+      elif identifier['is_array']:
+        kind = 'this' if self.symbols.scope_of(identifier['name']) == 'class' else self.symbols.kind_of(identifier['name'])
+        code.append('push {} {}'.format(kind, index))
+        code.append('add')
+        code.append('pop pointer 1')
+        code.append('push that 0')
+
 
   def _get_label(self):
 #    _ret = '__{}__LABEL__{}__'.format(self.class_name, JackGenerator.labelCount)
@@ -509,7 +526,7 @@ class JackGenerator:
 if __name__ == '__main__':
   from JackAnalyzer import JackAnalyzer
 
-  trees = JackAnalyzer('../11/Square/').parse(True)
+  trees = JackAnalyzer('../11/Average/').parse(True)
   for filename in trees.keys():
     tree = trees[filename]
     generator = JackGenerator(tree)
