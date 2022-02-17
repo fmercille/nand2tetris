@@ -69,6 +69,13 @@ class SymbolTable:
     else:
       return None
 
+  def scope_of(self, name: str):
+    if name in self.method_symbols:
+      return 'method'
+    elif name in self.class_symbols:
+      return 'class'
+    else:
+      return None
 
 class JackGenerator:
   root: ElementTree = None
@@ -101,7 +108,7 @@ class JackGenerator:
           raise ParseTreeError('symbol', self.root.tag)
 
       elif child.tag == 'classVarDec':
-        pass # TODO - Build the symbols table for class variables
+        self.parseClassVarDec(child)
 
       elif child.tag == 'subroutineDec':
         self.parseSubroutineDec(child, code)
@@ -109,6 +116,24 @@ class JackGenerator:
       i += 1
 
     return code
+
+  def parseClassVarDec(self, root):
+    var_type = None
+    var_kind = None
+    scope = 'class'
+
+    for child in root:
+      if child.tag == 'keyword' and child.text.strip() == 'field':
+        var_kind = 'field'
+
+      elif var_type is None:
+        if child.tag == 'identifier' or child.tag == 'keyword':
+          var_type = child.text.strip()
+
+      else:
+        if child.tag == 'identifier':
+          self.symbols.define(scope, child.text.strip(), var_type, var_kind)
+
 
   def parseSubroutineDec(self, root, code):
     is_method = False
@@ -126,14 +151,20 @@ class JackGenerator:
           raise ParseTreeError('keyword', self.root.tag)
 
         if child.text.strip() == 'function':
-          scope = 'function'
+          scope = 'method'
         elif child.text.strip() == 'method':
           self.symbols.define(scope, 'this', self.class_name, 'argument') # This has to be argument 0
+          local_code.append('push argument 0')
+          local_code.append('pop pointer 0')
+        elif child.text.strip() == 'constructor':
+          local_code.append('push constant {}'.format(self.symbols.count('class', 'field')))
+          local_code.append('call Memory.alloc 1')
+          local_code.append('pop pointer 0')
         else:
           raise ParseTreeError('keyword', self.root.tag)
 
       elif i == 1: # return type, we can safely ignore
-        if child.tag != 'keyword':
+        if child.tag not in [ 'keyword', 'identifier' ]:
           raise ParseTreeError('keyword', self.root.tag)
 
       elif i == 2: # Method name
@@ -193,8 +224,7 @@ class JackGenerator:
           raise ParseTreeError('symbol', child.tag)
 
       if child.tag == 'varDec':
-        self.parseVarDec(child)
-        num_vars += len(child.findall('identifier'))
+        num_vars += self.parseVarDec(child)
 
       if child.tag == 'statements':
         self.parseStatements(child, code)
@@ -206,6 +236,7 @@ class JackGenerator:
   def parseVarDec(self, root):
     var_type = None
     scope = 'method'
+    num_vars = 0
 
     for child in root:
       if child.tag == 'keyword' and child.text.strip() == 'var':
@@ -218,6 +249,9 @@ class JackGenerator:
       else:
         if child.tag == 'identifier':
           self.symbols.define(scope, child.text.strip(), var_type, 'local')
+          num_vars += 1
+
+    return num_vars
 
   def parseStatements(self, root, code):
     for child in root:
@@ -258,15 +292,25 @@ class JackGenerator:
         self.parseExpressionList(child, code)
         num_arguments = len(child.findall('expression'))
 
-    if len(obj) > 0 and self.symbols.type_of(obj) is not None:
-      obj = self.symbols.type_of(obj)
+    if len(obj) > 0:
+      if self.symbols.type_of(obj) is not None:
+        kind = 'this' if self.symbols.scope_of(obj) == 'class' else self.symbols.kind_of(obj)
+        code.append('push {} {}'.format(kind, self.symbols.index_of(obj)))
+        obj = self.symbols.type_of(obj)
+        num_arguments += 1
+    else: # We assume the object is this
+      code.append('push pointer 0')
+      obj = self.class_name
+      num_arguments += 1
 
-    code.append("call {}.{} {}".format(obj, method, num_arguments) if len(obj) > 0 else "call {} {}".format(method, num_arguments))
+    code.append("call {}.{} {}".format(obj, method, num_arguments))
     code.append("pop temp 0")
     return code
 
   def parseLetStatement(self, root, code):
     dest = None
+    dest_is_array = False
+    dest_complete = False
 
     for child in root:
       if child.tag == 'let':
@@ -277,15 +321,29 @@ class JackGenerator:
       
       elif child.tag == 'symbol':
         if child.text.strip() == '[':
-          pass # TODO
+          dest_is_array = True
 
         elif child.text.strip() == '=':
-          pass
+          dest_complete = True
 
       elif child.tag == 'expression':
-        # TODO consider the case where the expression is the index of the array rather than the right hand side of the assignment
-        self.parseExpression(child, code)
-        code.append("pop {} {}".format(self.symbols.kind_of(dest), self.symbols.index_of(dest)))
+        if dest_complete:
+          if dest_is_array:
+            self.parseExpression(child, code)
+            code.append('pop temp 0')
+            code.append('pop pointer 1')
+            code.append('push temp 0')
+            code.append('pop that 0')
+          else:
+            self.parseExpression(child, code)
+            kind = 'this' if self.symbols.scope_of(dest) == 'class' else self.symbols.kind_of(dest)
+            code.append("pop {} {}".format(kind, self.symbols.index_of(dest)))
+        else:
+          if dest_is_array:
+            kind = 'this' if self.symbols.scope_of(dest) == 'class' else self.symbols.kind_of(dest)
+            code.append('push {} {}'.format(kind, self.symbols.index_of(dest)))
+            self.parseExpression(child, code)
+            code.append('add')
 
   def parseWhileStatement(self, root, code):
     start_label = self._get_label()
@@ -369,7 +427,7 @@ class JackGenerator:
       code.append(operator_code[op.pop()])
 
   def parseTerm(self, root, code):
-    identifier = { 'name': '', 'is_array': False, 'is_subroutine': False, 'num_arguments': 0, 'expression_code': [] }
+    identifier = { 'object': '', 'name': '', 'is_array': False, 'is_subroutine': False, 'num_arguments': 0, 'expression_code': [] }
     unary_op = ''
 
     for child in root:
@@ -406,7 +464,8 @@ class JackGenerator:
           identifier['is_array'] = True
 
         if text == '.': # Going into a subroutine call with class name prepended
-          identifier['name'] += '.'
+          identifier['object'] = identifier['name']
+          identifier['name'] = ''
 
         if text == '(':
           identifier['is_subroutine'] = True
@@ -422,16 +481,26 @@ class JackGenerator:
           unary_op = ''
 
     if len(identifier['name']) > 0: # We have seen an identifier and still need to process it
+      index = self.symbols.index_of(identifier['name'])
+
       if not identifier['is_array'] and not identifier['is_subroutine']:
-        kind = self.symbols.kind_of(identifier['name'])
-        index = self.symbols.index_of(identifier['name'])
+        kind = 'this' if self.symbols.scope_of(identifier['name']) == 'class' else self.symbols.kind_of(identifier['name'])
         code.append('push {} {}'.format(kind, index))
       elif identifier['is_subroutine']:
+        if index is None:
+          object = identifier['object']
+        else:
+          object = self.symbols.type_of(identifier['object'])
+          kind = 'this' if self.symbols.scope_of(identifier['name']) == 'class' else self.symbols.kind_of(identifier['name'])
+          code.append('push {} {}'.format(kind, index))
+
+        kind = 'this' if self.symbols.scope_of(identifier['name']) == 'class' else self.symbols.kind_of(identifier['name'])
         code += identifier['expression_code']
-        code.append('call {} {}'.format(identifier['name'], identifier['num_arguments']))
+        code.append('call {}.{} {}'.format(object, identifier['name'], identifier['num_arguments']))
 
   def _get_label(self):
-    _ret = '__{}__LABEL__{}__'.format(self.class_name, JackGenerator.labelCount)
+#    _ret = '__{}__LABEL__{}__'.format(self.class_name, JackGenerator.labelCount)
+    _ret = 'LABEL{}'.format(JackGenerator.labelCount)
     JackGenerator.labelCount += 1
     return _ret
 
@@ -440,7 +509,7 @@ class JackGenerator:
 if __name__ == '__main__':
   from JackAnalyzer import JackAnalyzer
 
-  trees = JackAnalyzer('../11/ConvertToBin/').parse(True)
+  trees = JackAnalyzer('../11/Square/').parse(True)
   for filename in trees.keys():
     tree = trees[filename]
     generator = JackGenerator(tree)
