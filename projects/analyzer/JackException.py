@@ -19,3 +19,7 @@ class ParseError(JackException):
       self.message = "Parse error: Expected token '" + str(expectedToken) + "' but found token '" + str(tokenFound) + "' instead"
     else:
       self.message = "Parse error: Expected token of type '" + str(expectedToken.type) + "' but found token '" + str(tokenFound) + "' instead."
+
+class ParseTreeError(JackException):
+  def __init__(self, expectedTag: str, tagFound: str):
+    self.message = "Fatal error while traversing the parse tree. Expected tag '" + expectedTag + "' but found tag '" + tagFound + "' instead."

@@ -51,4 +51,4 @@ if __name__ == '__main__':
   argparser.add_argument('input', help='Either a single .jack file, or a directory containing one or more .jack files')
   args = argparser.parse_args()
 
-  JackAnalyzer(args.input).parse(verbose=False)
+  JackAnalyzer(args.input).parse(verbose=True)
