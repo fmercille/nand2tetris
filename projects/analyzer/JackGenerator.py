@@ -514,6 +514,7 @@ class JackGenerator:
         code += identifier['expression_code']
         code.append('call {}.{} {}'.format(object, identifier['name'], identifier['num_arguments']))
       elif identifier['is_array']:
+        index = self.symbols.index_of(identifier['name'])
         kind = 'this' if self.symbols.kind_of(identifier['name']) == 'field' else self.symbols.kind_of(identifier['name'])
         code.append('push {} {}'.format(kind, index))
         code.append('add')
@@ -522,8 +523,8 @@ class JackGenerator:
 
 
   def _get_label(self):
-#    _ret = '__{}__LABEL__{}__'.format(self.class_name, JackGenerator.labelCount)
-    _ret = 'LABEL{}'.format(JackGenerator.labelCount)
+    _ret = '__{}__LABEL__{}__'.format(self.class_name, JackGenerator.labelCount)
+#    _ret = 'LABEL{}'.format(JackGenerator.labelCount)
     JackGenerator.labelCount += 1
     return _ret
 
@@ -532,7 +533,7 @@ class JackGenerator:
 if __name__ == '__main__':
   from JackAnalyzer import JackAnalyzer
 
-  trees = JackAnalyzer('../11/Pong/').parse(True)
+  trees = JackAnalyzer('../11/ComplexArrays/').parse(True)
   for filename in trees.keys():
     tree = trees[filename]
     generator = JackGenerator(tree)
