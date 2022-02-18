@@ -8,13 +8,37 @@
  * Note: Jack compilers implement multiplication and division using OS method calls.
  */
 class Math {
+    static Array powerOfTwo;
 
     /** Initializes the library. */
     function void init() {
+      let powerOfTwo = Array.new(16);
+      let powerOfTwo[0] = 1;
+      let powerOfTwo[1] = 2;
+      let powerOfTwo[2] = 4;
+      let powerOfTwo[3] = 8;
+      let powerOfTwo[4] = 16;
+      let powerOfTwo[5] = 32;
+      let powerOfTwo[6] = 64;
+      let powerOfTwo[7] = 128;
+      let powerOfTwo[8] = 256;
+      let powerOfTwo[9] = 512;
+      let powerOfTwo[10] = 1024;
+      let powerOfTwo[11] = 2048;
+      let powerOfTwo[12] = 4096;
+      let powerOfTwo[13] = 8192;
+      let powerOfTwo[14] = 16384;
+      let powerOfTwo[15] = (32767 + 1);
+      return;
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+      if (x < 0) {
+        return -x;
+      } else {
+        return x;
+      }
     }
 
     /** Returns the product of x and y. 
@@ -23,6 +47,22 @@ class Math {
      *  the Jack expressions x*y and multiply(x,y) return the same value.
      */
     function int multiply(int x, int y) {
+      var int sum, i;
+
+      let sum = 0;
+      let i = 0;
+
+      while (i < 16) {
+        if (~(y & powerOfTwo[i] = 0)) {
+          let sum = sum + x;
+        }
+
+        let x = x + x;
+
+        let i = i+1;
+      }
+
+      return sum;
     }
 
     /** Returns the integer part of x/y.
@@ -31,17 +71,78 @@ class Math {
      *  the Jack expressions x/y and divide(x,y) return the same value.
      */
     function int divide(int x, int y) {
+      var int q;
+      var boolean negative;
+
+      let negative = false;
+
+      if (x < 0) {
+        let negative = ~negative;
+        let x = -x;
+      }
+
+      if (y < 0) {
+        let negative = ~negative;
+        let y = -y;
+      }
+
+      if (y > x) {
+        return 0;
+      }
+
+      let q = Math.divide(x, y+y);
+
+      if ( (x - (Math.multiply(2,Math.multiply(q,y)))) < y ) {
+        let q = q+q;
+      } else {
+        let q = q+q+1;
+      }
+
+      if (negative) {
+        let q = -q;
+      }
+
+      return q;
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+      var int y, j, tmp;
+
+      let y = 0;
+      let j = 7;
+
+      while (j > -1) {
+        let tmp = y + powerOfTwo[j];
+        let tmp = tmp * tmp;
+
+        if ( ~(tmp > x) ) {
+          if (tmp > 0) {
+            let y = y + powerOfTwo[j];
+          }
+        }
+
+        let j = j - 1;
+      }
+
+      return y;
     }
 
     /** Returns the greater number. */
     function int max(int a, int b) {
+      if (a < b) {
+        return b;
+      } else {
+        return a;
+      }
     }
 
     /** Returns the smaller number. */
     function int min(int a, int b) {
+      if (a > b) {
+        return b;
+      } else {
+        return a;
+      }
     }
 }
