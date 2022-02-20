@@ -304,8 +304,15 @@ class Output {
 
     /** Moves the cursor one column back. */
     function void backSpace() {
-      if (cursorCol > 0) {
-        let cursorCol = cursorCol - 1;
+      let cursorCol = cursorCol - 1;
+
+      if (cursorCol < 0) {
+        let cursorCol = 63;
+        let cursorRow = cursorRow - 1;
+
+        if (cursorRow < 0) {
+          let cursorRow = 22;
+        }
       }
 
       return;
