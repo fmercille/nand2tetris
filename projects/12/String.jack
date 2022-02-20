@@ -11,54 +11,189 @@
  * string-oriented operations.
  */
 class String {
+    field Array arr;
+    field int length;
 
     /** constructs a new empty string with a maximum length of maxLength
      *  and initial length of 0. */
     constructor String new(int maxLength) {
+      if (maxLength = 0) {
+        let maxLength = 1;
+      }
+
+      let arr = Array.new(maxLength);
+      let length = 0;
+
+      return this;
     }
 
     /** Disposes this string. */
     method void dispose() {
+      do Memory.deAlloc(arr);
+      do Memory.deAlloc(this);
+      return;
     }
 
     /** Returns the current length of this string. */
     method int length() {
+      return length;
     }
 
     /** Returns the character at the j-th location of this string. */
     method char charAt(int j) {
+      return arr[j];
     }
 
     /** Sets the character at the j-th location of this string to c. */
     method void setCharAt(int j, char c) {
+      let arr[j] = c;
+      return;
     }
 
     /** Appends c to this string's end and returns this string. */
     method String appendChar(char c) {
+      let arr[length] = c;
+      let length = length + 1;
+      return this;
     }
 
     /** Erases the last character from this string. */
     method void eraseLastChar() {
+      if (length > 0) {
+        let length = length - 1;
+      }
+      return;
     }
 
     /** Returns the integer value of this string, 
      *  until a non-digit character is detected. */
     method int intValue() {
+      var int value;
+      var int numDigits;
+      var Array digits;
+      var int i, powerOfTen, tmp;
+      var char c;
+      var boolean negative;
+
+      let numDigits = 0;
+      let value = 0;
+      let i = 0;
+      let tmp = 0;
+      let negative = (arr[0] = 45);
+      let digits = Array.new(length);
+
+      if (negative) {
+        let i = 1;
+      }
+
+      while (i < length) {
+        let c = arr[i];
+
+        if ((c > 47) & (c < 58)) { // Is a digit
+          let digits[tmp] = c-48;
+          let numDigits = tmp+1;
+        } else { // First non-digit
+          let i = length; // To break out of the loop
+        }
+
+        let i = i + 1;
+        let tmp = tmp + 1;
+      }
+
+      let i = 0;
+      let powerOfTen = 1;
+
+      while (i < numDigits) {
+        let value = value + (digits[ (numDigits-1) - i ] * powerOfTen);
+        let powerOfTen = powerOfTen * 10;
+        let i = i + 1;
+      }
+
+      if (negative) {
+        let value = -value;
+      }
+
+      return value;
     }
 
     /** Sets this string to hold a representation of the given value. */
     method void setInt(int val) {
+      var int tmp;
+
+      let length = 0;
+
+      if (val < 0) {
+        do appendChar(45); // Minus sign
+
+        if (val < -9999) {
+          let tmp = -(val / 10000);
+          do appendChar(48+tmp);
+          let val = val + (tmp * 10000);
+        }
+
+        if (val < -999) {
+          let tmp = -(val / 1000);
+          do appendChar(48+tmp);
+          let val = val + (tmp * 1000);
+        }
+
+        if (val < -99) {
+          let tmp = -(val / 100);
+          do appendChar(48+tmp);
+          let val = val + (tmp * 100);
+        }
+
+        if (val < -9) {
+          let tmp = -(val / 10);
+          do appendChar(48+tmp);
+          let val = val + (tmp * 10);
+        }
+
+        let tmp = -val;
+      } else {
+        if (val > 9999) {
+          let tmp = val / 10000;
+          do appendChar(48+tmp);
+          let val = val - (tmp * 10000);
+        }
+
+        if (val > 999) {
+          let tmp = val / 1000;
+          do appendChar(48+tmp);
+          let val = val - (tmp * 1000);
+        }
+
+        if (val > 99) {
+          let tmp = val / 100;
+          do appendChar(48+tmp);
+          let val = val - (tmp * 100);
+        }
+
+        if (val > 9) {
+          let tmp = val / 10;
+          do appendChar(48+tmp);
+          let val = val - (tmp * 10);
+        }
+
+        let tmp = val;
+      }
+
+      do appendChar(48+tmp);
+      return;
     }
 
     /** Returns the new line character. */
     function char newLine() {
+      return 128;
     }
 
     /** Returns the backspace character. */
     function char backSpace() {
+      return 129;
     }
 
     /** Returns the double quote (") character. */
     function char doubleQuote() {
+      return 34;
     }
 }
