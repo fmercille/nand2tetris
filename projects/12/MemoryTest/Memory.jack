@@ -19,7 +19,7 @@ class Memory {
       let heap = 2048;
       let freeList = 2048;
       let heap[0] = 0; // Next
-      let heap[1] = 14333; // Size
+      let heap[1] = 14335; // Size
       return;
     }
 
@@ -45,7 +45,7 @@ class Memory {
       let segment = freeList;
       let bestFit = 0;
 
-      while ( ~(segment = 0) ) {
+      while ( ~(segment  = 0) ) {
         if ( (segment[1] > (size-1)) ) { // We only process segments that are at least big enough
           if ( bestFit = 0 ) {
             let bestFit = segment;
@@ -59,11 +59,10 @@ class Memory {
         let segment = segment[0]; // Next
       }
 
-      if ( bestFit[1] < (size+1) ) { // We have an exact fit
+      if ( bestFit[1] < (size-3) ) { // We have an exact fit
         // We move the previous segment's next pointer to the bestFit's next pointer
         if ( freeList = bestFit ) {
           let freeList = bestFit[0];
-          let bestFit[0] = 0;
           let segment = bestFit;
         } else {
           let tmp = freeList;
@@ -74,13 +73,13 @@ class Memory {
 
           let tmp[0] = bestFit[0];
           let bestFit[0] = 0;
-          let segment = bestFit;
+          let segment = tmp;
         }
       } else { // We need to fragment a segment
-        let tmp = (bestFit + bestFit[1] + 2) - ( size + 2 );
+        let tmp = bestFit + bestFit[1] - (size+2);
         let tmp[0] = 0;
         let tmp[1] = size;
-        let bestFit[1] = (tmp - bestFit) - 2;
+        let bestFit[1] = bestFit[1] - (size+2);
         let segment = tmp;
       }
 
