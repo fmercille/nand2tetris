@@ -39,5 +39,58 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // A register
+    Not (in=instruction[15], out=isAInstruction);
+    Or (a=isAInstruction, b=instruction[5], out=loadRegA);
+    Mux16 (a=instruction, b=outAlu, sel=instruction[15], out=inRegA);
+    ARegister (in=inRegA, load=loadRegA, out=outRegA, out[0..14]=addressM);
+
+    // D register
+    And (a=instruction[15], b=instruction[4], out=loadRegD);
+    DRegister (in=outAlu, load=loadRegD, out=outRegD);
+
+    // ALU
+    Mux16 (a=outRegA, b=inM, sel=instruction[12], out=outAorM);
+    ALU ( x=outRegD,
+          y=outAorM,
+          zx=instruction[11],
+          nx=instruction[10],
+          zy=instruction[9],
+          ny=instruction[8],
+          f= instruction[7],
+          no=instruction[6],
+          out=outAlu,
+          out=outM,
+          zr=zr,
+          ng=ng);
+    Not (in=zr, out=notZr);
+    Not (in=ng, out=notNg);
+    And (a=notZr, b=notNg, out=notZrOrNg);
+
+    // PC
+    PC (in=outRegA, load=loadPC, inc=incPC, reset=reset, out[0..14]=pc);
+
+    // Misc controls
+    And (a=instruction[3], b=instruction[15], out=writeM);
+
+    // Jumps
+      // JGT
+      And (a=instruction[0], b=notZrOrNg, out=outJGT);
+
+      // JEQ
+      And (a=instruction[1], b=zr, out=outJEQ);
+
+      // JLT
+      And (a=instruction[2], b=ng, out=outJLT);
+
+      // JNE
+      Or (a=outJGT, b=outJLT, out=outJNE);
+
+      // JMP
+      Or (a=outJNE, b=outJEQ, out=outJMP);
+
+      // Are we jumping at all?
+      And (a=outJMP, b=instruction[15], out=loadPC);
+
+    Not (in=loadPC, out=incPC);
 }

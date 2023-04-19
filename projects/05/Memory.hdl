@@ -27,5 +27,21 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+
+    // From 0 to 16383 -- address[14] = 0
+    RAM16K (in=in, load=loadRAM, address=address[0..13], out=outRAM);
+
+
+    // From 16384 to 24575 -- address[14] = 1 and address[13] = 0
+    Screen (in=in, load=loadScreen, address=address[0..12], out=outScreen);
+
+    // Keyboard at 24576 -- address[14] = 1 and address[13] = 1
+    Keyboard (out=outKeyboard);
+
+    // Send the load signal to the proper part
+    DMux (in=load, sel=address[14], a=loadRAM, b=loadDevice);
+    DMux (in=loadDevice, sel=address[13], a=loadScreen, b=loadKeyboard);
+
+    // Mux the output to the proper device based on address
+    Mux4Way16 (a=outRAM, b=outRAM, c=outScreen, d=outKeyboard, sel[1]=address[14], sel[0]=address[13], out=out);
 }
